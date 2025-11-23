@@ -25,16 +25,16 @@
 
 ### 任务清单
 
-- [ ] T001 创建项目根目录结构（backend/, frontend/, docs/）
-- [ ] T002 [P] 初始化 Backend pyproject.toml（UV 配置，声明 FastAPI, httpx, aiosqlite, pytest 等依赖）
-- [ ] T003 [P] 初始化 Frontend package.json（Vue 3, Vite, axios 等依赖）
-- [ ] T004 创建 Dockerfile（Backend - 多阶段构建，Python 3.12 slim 基础镜像）
-- [ ] T005 创建 Dockerfile（Frontend - nginx 服务静态文件）
-- [ ] T006 创建 docker-compose.yml（编排 backend, frontend, 共享网络）
-- [ ] T007 创建 Makefile（提供 setup, up, down, test, logs 等命令）
-- [ ] T008 创建 backend/.gitignore（排除 __pycache__, .venv, *.db, .pytest_cache 等）
-- [ ] T009 创建 frontend/.gitignore（排除 node_modules/, dist/, .env.local 等）
-- [ ] T010 编写 README.md（项目介绍、快速开始、技术栈说明）
+- [X] T001 创建项目根目录结构（backend/, frontend/, docs/）
+- [X] T002 [P] 初始化 Backend pyproject.toml（UV 配置，声明 FastAPI, httpx, aiosqlite, pytest 等依赖）
+- [X] T003 [P] 初始化 Frontend package.json（Vue 3, Vite, axios 等依赖）
+- [X] T004 创建 Dockerfile（Backend - 多阶段构建，Python 3.12 slim 基础镜像）
+- [X] T005 创建 Dockerfile（Frontend - nginx 服务静态文件）
+- [X] T006 创建 docker-compose.yml（编排 backend, frontend, 共享网络）
+- [X] T007 创建 Makefile（提供 setup, up, down, test, logs 等命令）
+- [X] T008 创建 backend/.gitignore（排除 __pycache__, .venv, *.db, .pytest_cache 等）
+- [X] T009 创建 frontend/.gitignore（排除 node_modules/, dist/, .env.local 等）
+- [X] T010 编写 README.md（项目介绍、快速开始、技术栈说明）
 
 **验收标准**:
 - `make setup` 能成功初始化所有依赖
