@@ -1,0 +1,446 @@
+openapi: 3.0.3
+info:
+  title: LLM API Gateway - Admin Console API
+  description: |
+    Admin Console 的后端 API，提供后端服务器配置管理和用量统计查询功能。
+  version: 1.0.0
+  contact:
+    name: Vega Team
+
+servers:
+  - url: http://localhost:8000/api
+    description: 本地开发环境
+  - url: https://gateway.example.com/api
+    description: 生产环境
+
+paths:
+  /servers:
+    get:
+      summary: 获取所有服务器配置
+      description: 返回所有后端 LLM 服务器的配置列表
+      operationId: listServers
+      tags:
+        - Server Config
+      responses:
+        '200':
+          description: 成功返回服务器列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServerConfig'
+
+    post:
+      summary: 添加新的服务器配置
+      description: 创建一个新的后端 LLM 服务器配置
+      operationId: createServer
+      tags:
+        - Server Config
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServerConfigCreate'
+            examples:
+              openai_example:
+                summary: OpenAI 配置示例
+                value:
+                  name: "OpenAI GPT-4"
+                  url: "https://api.openai.com/v1"
+                  api_key: "sk-xxxxxxxxxxxxxxxx"
+                  models: ["gpt-4", "gpt-3.5-turbo"]
+                  rpm_limit: 60
+                  tpm_limit: 90000
+      responses:
+        '201':
+          description: 成功创建服务器配置
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerConfig'
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_url:
+                  summary: URL 格式错误
+                  value:
+                    error: "Invalid URL format"
+                    details:
+                      field: "url"
+                      message: "URL must start with https://"
+
+  /servers/{server_id}:
+    get:
+      summary: 获取单个服务器配置
+      description: 根据 ID 获取指定服务器的配置详情
+      operationId: getServer
+      tags:
+        - Server Config
+      parameters:
+        - $ref: '#/components/parameters/ServerIdPath'
+      responses:
+        '200':
+          description: 成功返回服务器配置
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerConfig'
+        '404':
+          description: 服务器不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: 更新服务器配置
+      description: 修改现有服务器的配置参数
+      operationId: updateServer
+      tags:
+        - Server Config
+      parameters:
+        - $ref: '#/components/parameters/ServerIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServerConfigUpdate'
+      responses:
+        '200':
+          description: 成功更新服务器配置
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerConfig'
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: 服务器不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: 删除服务器配置
+      description: 删除指定的后端服务器配置
+      operationId: deleteServer
+      tags:
+        - Server Config
+      parameters:
+        - $ref: '#/components/parameters/ServerIdPath'
+      responses:
+        '204':
+          description: 成功删除服务器配置
+        '404':
+          description: 服务器不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /stats:
+    get:
+      summary: 获取用量统计
+      description: |
+        按服务器和应用维度查询用量统计数据，支持时间范围和聚合粒度筛选。
+      operationId: getUsageStats
+      tags:
+        - Usage Stats
+      parameters:
+        - name: server_id
+          in: query
+          description: 筛选特定服务器（可选）
+          schema:
+            type: string
+            format: uuid
+        - name: app_name
+          in: query
+          description: 筛选特定应用（可选）
+          schema:
+            type: string
+        - name: start_time
+          in: query
+          description: 开始时间（ISO 8601 格式）
+          schema:
+            type: string
+            format: date-time
+            example: "2025-11-23T00:00:00Z"
+        - name: end_time
+          in: query
+          description: 结束时间（ISO 8601 格式）
+          schema:
+            type: string
+            format: date-time
+            example: "2025-11-23T23:59:59Z"
+        - name: bucket_type
+          in: query
+          description: 时间聚合粒度
+          schema:
+            type: string
+            enum: [hour, day, month]
+            default: hour
+      responses:
+        '200':
+          description: 成功返回用量统计数据
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UsageStat'
+        '400':
+          description: 参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /stats/export:
+    get:
+      summary: 导出用量报表
+      description: 导出详细的用量数据为 CSV 格式
+      operationId: exportUsageStats
+      tags:
+        - Usage Stats
+      parameters:
+        - name: server_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: start_time
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: end_time
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: 成功返回 CSV 文件
+          content:
+            text/csv:
+              schema:
+                type: string
+                example: |
+                  server_id,app_name,time_bucket,total_requests,total_tokens
+                  uuid-123,app-1,2025-11-23T14,100,5000
+
+components:
+  parameters:
+    ServerIdPath:
+      name: server_id
+      in: path
+      required: true
+      description: 服务器唯一标识符
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    ServerConfig:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: 服务器唯一标识
+        name:
+          type: string
+          description: 服务器名称
+          example: "OpenAI GPT-4"
+        url:
+          type: string
+          format: uri
+          description: 后端 API 基础 URL
+          example: "https://api.openai.com/v1"
+        models:
+          type: array
+          items:
+            type: string
+          description: 支持的模型列表
+          example: ["gpt-4", "gpt-3.5-turbo"]
+        rpm_limit:
+          type: integer
+          description: 每分钟请求数限制
+          example: 60
+        tpm_limit:
+          type: integer
+          description: 每分钟 token 数限制
+          example: 90000
+        queue_max_size:
+          type: integer
+          description: 队列最大长度
+          example: 100
+        queue_timeout_seconds:
+          type: integer
+          description: 队列超时时间（秒）
+          example: 30
+        is_active:
+          type: boolean
+          description: 是否启用
+          example: true
+        created_at:
+          type: string
+          format: date-time
+          description: 创建时间
+        updated_at:
+          type: string
+          format: date-time
+          description: 最后更新时间
+
+    ServerConfigCreate:
+      type: object
+      required:
+        - name
+        - url
+        - api_key
+        - models
+        - rpm_limit
+        - tpm_limit
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: "OpenAI GPT-4"
+        url:
+          type: string
+          format: uri
+          pattern: '^https://.+'
+          example: "https://api.openai.com/v1"
+        api_key:
+          type: string
+          minLength: 1
+          description: API Key（将被加密存储）
+          example: "sk-xxxxxxxxxxxxxxxx"
+        models:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          example: ["gpt-4", "gpt-3.5-turbo"]
+        rpm_limit:
+          type: integer
+          minimum: 0
+          example: 60
+        tpm_limit:
+          type: integer
+          minimum: 0
+          example: 90000
+        queue_max_size:
+          type: integer
+          minimum: 1
+          default: 100
+        queue_timeout_seconds:
+          type: integer
+          minimum: 1
+          default: 30
+
+    ServerConfigUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        api_key:
+          type: string
+          minLength: 1
+        models:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        rpm_limit:
+          type: integer
+          minimum: 0
+        tpm_limit:
+          type: integer
+          minimum: 0
+        queue_max_size:
+          type: integer
+          minimum: 1
+        queue_timeout_seconds:
+          type: integer
+          minimum: 1
+        is_active:
+          type: boolean
+
+    UsageStat:
+      type: object
+      properties:
+        server_id:
+          type: string
+          format: uuid
+        server_name:
+          type: string
+          description: 服务器名称（冗余字段，方便展示）
+        app_name:
+          type: string
+          description: 应用名称
+        time_bucket:
+          type: string
+          description: 时间分组
+          example: "2025-11-23T14"
+        bucket_type:
+          type: string
+          enum: [hour, day, month]
+          description: 时间粒度
+        total_requests:
+          type: integer
+          description: 总请求数
+          example: 150
+        successful_requests:
+          type: integer
+          description: 成功请求数
+          example: 145
+        failed_requests:
+          type: integer
+          description: 失败请求数
+          example: 5
+        total_tokens:
+          type: integer
+          format: int64
+          description: 总 token 数
+          example: 12000
+        avg_latency_ms:
+          type: number
+          format: float
+          description: 平均延迟（毫秒）
+          example: 523.5
+        queued_requests:
+          type: integer
+          description: 曾排队的请求数
+          example: 10
+        updated_at:
+          type: string
+          format: date-time
+          description: 最后更新时间
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: 错误信息
+        details:
+          type: object
+          description: 错误详情（可选）
