@@ -50,14 +50,14 @@
 
 ### 任务清单
 
-- [ ] T011 [P] 编写 ServerConfig Pydantic 模型（backend/src/models/server_config.py）
-- [ ] T012 [P] 编写 RequestLog Pydantic 模型（backend/src/models/request_log.py）
-- [ ] T013 [P] 编写 UsageStat Pydantic 模型（backend/src/models/usage_stats.py）
-- [ ] T014 编写数据库初始化脚本（backend/src/storage/init_db.py，创建 server_configs, request_logs, usage_stats 表）
-- [ ] T015 编写数据库操作基类（backend/src/storage/database.py，封装 aiosqlite 连接和 CRUD 操作）
-- [ ] T016 实现 API Key 加密工具（backend/src/storage/crypto.py，使用 Fernet 加密/解密）
-- [ ] T017 编写应用配置类（backend/src/config.py，从环境变量加载配置）
-- [ ] T018 初始化 FastAPI 应用（backend/src/main.py，配置 CORS, 日志, 生命周期事件）
+- [X] T011 [P] 编写 ServerConfig Pydantic 模型（backend/src/models/server_config.py）
+- [X] T012 [P] 编写 RequestLog Pydantic 模型（backend/src/models/request_log.py）
+- [X] T013 [P] 编写 UsageStat Pydantic 模型（backend/src/models/usage_stats.py）
+- [X] T014 编写数据库初始化脚本（backend/src/storage/init_db.py，创建 server_configs, request_logs, usage_stats 表）
+- [X] T015 编写数据库操作基类（backend/src/storage/database.py，封装 aiosqlite 连接和 CRUD 操作）
+- [X] T016 实现 API Key 加密工具（backend/src/storage/crypto.py，使用 Fernet 加密/解密）
+- [X] T017 编写应用配置类（backend/src/config.py，从环境变量加载配置）
+- [X] T018 初始化 FastAPI 应用（backend/src/main.py，配置 CORS, 日志, 生命周期事件）
 
 **验收标准**:
 - 运行 `python -m src.storage.init_db` 能创建数据库文件和所有表
