@@ -18,7 +18,8 @@ help: ## 显示此帮助信息
 
 setup: ## 初始化开发环境（安装依赖）
 	@echo "$(GREEN)初始化后端环境...$(NC)"
-	cd backend && pip install uv && uv venv && . .venv/bin/activate && uv pip install -e ".[dev]"
+	cd backend && uv venv --clear
+	cd backend && . .venv/bin/activate && uv pip install -e ".[dev]"
 	@echo "$(GREEN)初始化前端环境...$(NC)"
 	cd frontend && npm install
 	@echo "$(GREEN)✓ 环境初始化完成$(NC)"

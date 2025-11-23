@@ -4,8 +4,8 @@ FROM python:3.12-slim as builder
 
 WORKDIR /build
 
-# 安装 UV 包管理器
-RUN pip install --no-cache-dir uv
+# 复制系统安装的 UV
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 # 复制依赖文件
 COPY pyproject.toml ./
