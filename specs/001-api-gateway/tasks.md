@@ -14,7 +14,7 @@
 - `[P]` - 可并行执行的任务标记
 - `[US1]`, `[US2]` 等 - 用户故事标签
 
-**总任务数**: 52  
+**总任务数**: 61  
 **估计工时**: 约 15-20 个工作日（2-3周）
 
 ---
@@ -75,14 +75,15 @@
 - [ ] T019 [US1] 编写代理端点集成测试（tests/integration/test_proxy.py）
   - 测试场景 1: 带 App-Name header 的请求成功转发
   - 测试场景 2: 根据模型自动选择后端服务器
+  - 测试场景 2a: 多服务器支持同一模型时，选择配置顺序中的首个服务器
   - 测试场景 3: 缺少 App-Name header 返回 400
   - 测试场景 4: 后端错误原样返回
 
 ### 实现任务
 
-- [ ] T020 [US1] 实现 httpx AsyncClient 全局单例（backend/src/main.py 生命周期管理）
+- [ ] T020 [US1] 实现 httpx AsyncClient 全局单例（backend/src/main.py 生命周期管理，timeout=30s, max_connections=200, max_keepalive=50）
 - [ ] T021 [US1] 实现服务器配置加载器（backend/src/admin/config.py，从数据库加载配置到内存）
-- [ ] T022 [US1] 实现模型路由逻辑（backend/src/gateway/router.py，根据模型名选择服务器）
+- [ ] T022 [US1] 实现模型路由逻辑（backend/src/gateway/router.py，根据模型名选择服务器，多服务器时使用首次匹配策略）
 - [ ] T023 [US1] 实现请求验证中间件（backend/src/gateway/middleware.py，检查 App-Name header）
 - [ ] T024 [US1] 实现代理转发核心逻辑（backend/src/gateway/proxy.py，使用 httpx 转发请求）
 - [ ] T025 [US1] 实现请求日志记录（backend/src/storage/request_logger.py，异步写入 request_logs 表）
@@ -231,11 +232,13 @@
 - [ ] T058 生成 API 文档（FastAPI 自动文档 /docs, Swagger UI）
 - [ ] T059 编写部署文档（docs/deployment.md，生产环境部署指南）
 - [ ] T060 代码质量检查（运行 black, ruff, mypy）
+- [ ] T061 编写性能压测脚本（tests/performance/test_load.py，使用 locust 或 k6 验证 SC-001 延迟和 SC-002 并发要求）
 
 **验收标准**:
 - 所有日志输出为 JSON 格式
 - Docker 镜像体积 < 200MB
 - E2E 测试覆盖核心用户流程
+- 性能测试验证 SC-001（延迟 <50ms）和 SC-002（1000+ 并发）
 - 代码通过 black, ruff, mypy 检查
 
 ---

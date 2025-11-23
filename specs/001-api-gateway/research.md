@@ -221,6 +221,37 @@ CREATE TABLE usage_stats (
 
 ---
 
+### 7. 多服务器路由策略
+
+**问题**: 当多个后端服务器都支持同一模型时（如 Server A 和 Server B 都支持 gpt-4），应如何选择路由目标？
+
+**决策**: 使用首次匹配（First-Match）策略，按配置顺序选择第一个支持该模型的服务器
+
+**理由**:
+- 简单且确定性强，易于理解和调试
+- 管理员可通过调整服务器配置顺序控制路由优先级
+- 避免引入额外的负载均衡逻辑（如轮询、最少队列）带来的复杂性
+- 适合 MVP 阶段快速实现
+
+**替代方案考虑**:
+- 轮询（Round-Robin）: 需维护状态，增加并发复杂度
+- 最少队列（Least-Busy）: 需实时监控队列长度，性能开销较大
+- 随机选择（Random）: 不确定性强，难以调试和优化
+
+**实现要点**:
+```python
+def select_server_for_model(model_name: str) -> ServerConfig:
+    # 按配置加载顺序遍历所有服务器
+    for server in sorted_servers:  # sorted by created_at or explicit order
+        if model_name in server.models:
+            return server
+    raise ModelNotFoundError(model_name)
+```
+
+**未来扩展**: 如需负载均衡，可在 Phase 7 后添加可配置的路由策略（first-match, round-robin, least-busy）
+
+---
+
 ## 总结
 
 所有关键技术决策已明确：
@@ -228,6 +259,7 @@ CREATE TABLE usage_stats (
 - ✅ 限流算法：Sliding Window Counter
 - ✅ 队列管理：asyncio.Queue + FIFO 驱逐
 - ✅ 配置加载：定期轮询数据库（5 秒）
+- ✅ 多服务器路由：首次匹配策略（按配置顺序）
 - ✅ 前后端集成：开发分离 + 生产 nginx
 - ✅ 数据持久化：aiosqlite + WAL 模式
 - ✅ 用量统计：日志 + 定时聚合
