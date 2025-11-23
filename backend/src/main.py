@@ -10,20 +10,48 @@ LLM API Gateway 网关系统主应用，提供：
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
+from contextlib import asynccontextmanager
+import logging
+import structlog
+from src.config import settings
+
+# 配置日志
+logging.basicConfig(
+    level=settings.LOG_LEVEL,
+    format="%(message)s",
+)
+structlog.configure(
+    processors=[
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.processors.JSONRenderer(),
+    ],
+    logger_factory=structlog.stdlib.LoggerFactory(),
+)
+logger = structlog.get_logger()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """应用生命周期管理"""
+    logger.info("startup", message="Vega Gateway starting up")
+    # TODO: 初始化数据库连接、HTTP 客户端等
+    yield
+    logger.info("shutdown", message="Vega Gateway shutting down")
+    # TODO: 关闭资源
 
 # 创建 FastAPI 应用
 app = FastAPI(
-    title="Vega Gateway",
+    title=settings.APP_NAME,
     description="LLM API Gateway - 统一的 LLM API 网关，提供代理、限流、配置管理和用量统计",
     version="0.1.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 # CORS 配置
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 生产环境应限制具体域名
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
